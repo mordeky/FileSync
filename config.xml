@@ -1,0 +1,18 @@
+
+<Root value="myxml">
+  <TargetFile value="F:\www\web\sln\www.vcproj" />
+	
+	<RejectFileType>
+		doc, docx, bat,
+		gif, jpg, png
+	</RejectFileType>
+	
+	<AcceptFile value="F:\www\index.htm" />
+	<AcceptFile value="F:\www\index2.htm" />
+	
+	<AcceptPath value="F:\www\web">
+		<RejectFile value="F:\www\web\sln\config.txt" />
+		<RejectPath value="F:\www\web\console\img" />
+	</AcceptPath>
+
+</Root>
