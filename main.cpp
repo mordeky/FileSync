@@ -15,8 +15,9 @@ using namespace std;
 
 void main(int argc, TCHAR** argv)
 {
-	//CXMLParser xml(argv[1]);
-	
+	// 初始化 COM 环境
+	CoInitialize(NULL);
+
 	try
 	{
 		ConfigFile cf(argv[1]);
@@ -48,6 +49,9 @@ void main(int argc, TCHAR** argv)
 	catch( TCHAR * str ) {
 		cout << "Exception raised: " << str << '\n';
 	}
+
+	// Closes the COM library on the current thread
+	CoUninitialize();
 }
 
 /*

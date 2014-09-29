@@ -114,7 +114,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\Matlab\Setting\config.xml" />
-    <None Include="config.xml" />
+    <None Include="config.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\..\..\Matlab\Setting\SetMatlabPath.js" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

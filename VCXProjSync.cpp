@@ -15,11 +15,13 @@ VCXProjSync::VCXProjSync(ConfigFile* pConfigFile)
 	bVCProj = m_pConfig->checkFileType(m_pConfig->m_strTargetName, ".vcproj");
 
 	if(bVCProj)
-		m_vc = VC(m_pConfig->m_strTargetFile);
+	{
+		m_pVC = new VC(m_pConfig->m_strTargetFile);
+	}
 	else
 	{
-		m_vcx = VCX(m_pConfig->m_strTargetFile);
-		m_vcxFilter = VCXFilter(m_pConfig->m_strTargetFile + ".filters");
+		m_pVCX = new VCX(m_pConfig->m_strTargetFile);
+		m_pVCXFilter = new VCXFilter(m_pConfig->m_strTargetFile + ".filters");
 	}
 }
 
@@ -28,13 +30,18 @@ VCXProjSync::~VCXProjSync(void)
 {
 	if(bVCProj)
 	{
-		m_vc.save();
-		cout << "Synchronise " << m_vc.m_strFile << " successfully!" << endl;
+		delete m_pVC;
+		m_pVC->save();
+		cout << "Synchronise " << m_pVC->m_strFile << " successfully!" << endl;
 	}else{
-		m_vcx.save();
-		m_vcxFilter.save();
-		cout << "Synchronise " << m_vcx.m_strFile << " successfully!" << endl;
-		cout << "Synchronise " << m_vcxFilter.m_strFile << " successfully!" << endl;
+		m_pVCX->save();
+		m_pVCXFilter->save();
+		
+		cout << "Synchronise " << m_pVCX->m_strFile << " successfully!" << endl;
+		cout << "Synchronise " << m_pVCXFilter->m_strFile << " successfully!" << endl;
+
+		delete m_pVCX;
+		delete m_pVCXFilter;
 	}
 }
 
@@ -103,10 +110,10 @@ EXIT:
 MSXML2::IXMLDOMElementPtr VCXProjSync::addFile(MSXML2::IXMLDOMElementPtr pParentElement, CString strRelativePath, CString strRelativeFilter)
 {
 	if(bVCProj)
-		return m_vc.addFile(pParentElement, strRelativePath);
+		return m_pVC->addFile(pParentElement, strRelativePath);
 
-	m_vcx.addFile(strRelativePath);
-	MSXML2::IXMLDOMElementPtr pFile = m_vcxFilter.addFile(strRelativePath, strRelativeFilter);
+	m_pVCX->addFile(strRelativePath);
+	MSXML2::IXMLDOMElementPtr pFile = m_pVCXFilter->addFile(strRelativePath, strRelativeFilter);
 	return pFile;
 }
 
@@ -114,9 +121,9 @@ MSXML2::IXMLDOMElementPtr VCXProjSync::addFile(MSXML2::IXMLDOMElementPtr pParent
 MSXML2::IXMLDOMElementPtr VCXProjSync::addFilter(MSXML2::IXMLDOMElementPtr pParentElement, const _variant_t attributeVal, CString strRelativeFilter)
 {
 	if(bVCProj)
-		return m_vc.addFilter(pParentElement, attributeVal);
+		return m_pVC->addFilter(pParentElement, attributeVal);
 
-	return m_vcxFilter.addFilter(strRelativeFilter);
+	return m_pVCXFilter->addFilter(strRelativeFilter);
 }
 
 int VCXProjSync::addAllFiles(MSXML2::IXMLDOMElementPtr pParentElement, const CString strCurPath, const CString strCurRelativePath, const CString strCurRelativeFilter)
@@ -174,7 +181,7 @@ FIND_NEXT:
 	FindClose(hFind);
 
 	if(iChildren == 0)
-		DeleteNode(pParentElement);
+		CXMLParser::DeleteNode(pParentElement);
 
 	return iChildren;
 }
@@ -191,24 +198,24 @@ void VCXProjSync::run()
 	{
 		setRelativePath(FilePtr->strData);
 
-		addFile(m_vc.m_pFilesElement, m_strCurRelativePath, m_strCurRelativeFilter);
+		addFile(m_pVC->m_pFilesElement, m_strCurRelativePath, m_strCurRelativeFilter);
 
 		FilePtr = FilePtr->pNext;
 	}
 
 	m_pCurAcceptPath = m_pConfig->m_pAcceptPath;
 
-	while(m_pCurAcceptPath && m_pCurAcceptPath->strPath != "")
+	while(m_pCurAcceptPath && m_pCurAcceptPath->strData != "")
 	{
-		m_strCurRootPath = m_pCurAcceptPath->strPath;
+		m_strCurRootPath = m_pCurAcceptPath->strData;
 		addPathSep(m_strCurRootPath);
 
 		setRelativePath(m_strCurRootPath);
 
 		if(bVCProj)
-			addAllFiles(m_vc.m_pFilesElement, m_strCurRootPath, m_strCurRelativePath, m_strCurRelativeFilter);
-		else if(addAllFiles(m_vcxFilter.m_pFilesGroup, m_strCurRootPath, m_strCurRelativePath, m_strCurRelativeFilter))
-			m_vcxFilter.addFilterX(m_strCurRelativeFilter);
+			addAllFiles(m_pVC->m_pFilesElement, m_strCurRootPath, m_strCurRelativePath, m_strCurRelativeFilter);
+		else if(addAllFiles(m_pVCXFilter->m_pFilesGroup, m_strCurRootPath, m_strCurRelativePath, m_strCurRelativeFilter))
+			m_pVCXFilter->addFilterX(m_strCurRelativeFilter);
 
 		m_pCurAcceptPath = m_pCurAcceptPath->pNext;
 	}

@@ -38,7 +38,7 @@ public:
 
 	static void DeleteNode(MSXML2::IXMLDOMElementPtr pChildElement);
 	void DeleteNode(MSXML2::IXMLDOMElementPtr pParentElement, _bstr_t sChildName);
-	void DeleteNodeListWithoutAttributes(MSXML2::IXMLDOMElementPtr pParentElement, _bstr_t sChildName);
+	static void DeleteNodeListWithoutAttributes(MSXML2::IXMLDOMElementPtr pParentElement, _bstr_t sChildName);
 
 	void save()
 	{
@@ -50,8 +50,8 @@ public:
  * 循环获取节点属性的方法：之一
  * ---------------------------------
 
-MSXML2::IXMLDOMElementPtr pElem = (MSXML2::IXMLDOMElementPtr) pNode;
-CString test = (char*)(_bstr_t)pElem->getAttribute("value");
+MSXML2::IXMLDOMElementPtr pElement = (MSXML2::IXMLDOMElementPtr) pNode;
+CString test = (char*)(_bstr_t)pElement->getAttribute("value");
 
 /* ---------------------------------
  * 循环获取节点属性的方法：之二

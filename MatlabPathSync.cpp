@@ -21,7 +21,8 @@ MatlabPathSync::MatlabPathSync(ConfigFile* pConfigFile) : m_MFile(pConfigFile->m
 MatlabPathSync::~MatlabPathSync(void)
 {
 	m_MFile << "];\n";
-		    //<< "path(mypath, pathdef);\n";
+	m_MFile.flush();
+	m_MFile.close();
 
 	cout << "Synchronise " << m_pConfig->m_strTargetName << " successfully!" << endl;
 }
@@ -38,14 +39,14 @@ void MatlabPathSync::run()
 	UNIT* ptr;
 	m_pCurAcceptPath = m_pConfig->m_pAcceptPath;
 
-	while(m_pCurAcceptPath && m_pCurAcceptPath->strPath != "")
+	while(m_pCurAcceptPath && m_pCurAcceptPath->strData != "")
 	{
-		m_strCurRootPath = m_pCurAcceptPath->strPath;
+		m_strCurRootPath = m_pCurAcceptPath->strData;
 		addPathSep(m_strCurRootPath);
 
 		// 如果当前路径 m_strCurRootPath 下，有需要按顺序排序的文件夹，则先添加
 		// 如：<AcceptPath value="E:\Academic\Labs\Matlab\Work\" order="Common, Imgs, Reading">
-		ptr = m_pCurAcceptPath->pOrder;
+		ptr = m_pCurAcceptPath->pSubfolderOrder;
 		while(ptr && ptr->strData != "")
 		{
 			CString strCurPath = m_strCurRootPath + ptr->strData;

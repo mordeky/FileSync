@@ -28,11 +28,13 @@ CXMLParser::CXMLParser(CString strFile, CString strFileType) : m_strFile(strFile
 }
 
 CXMLParser::CXMLParser(void)
-{
-}
+{}
 
 CXMLParser::~CXMLParser(void)
 {
+	m_pRootElement.Release();
+	m_pDoc.Release(); //注意，必须是：m_pDoc.Release(); 而不能是：m_pDoc->Release();
+	//CoUninitialize();
 }
 
 void CXMLParser::loadXML(CString strXMLFile, MSXML2::IXMLDOMDocumentPtr &pDoc, MSXML2::IXMLDOMElementPtr &pRootElement)
@@ -43,8 +45,9 @@ void CXMLParser::loadXML(CString strXMLFile, MSXML2::IXMLDOMDocumentPtr &pDoc, M
 void CXMLParser::loadXML(TCHAR* lpXMLFile, MSXML2::IXMLDOMDocumentPtr &pDoc, MSXML2::IXMLDOMElementPtr &pRootElement)
 {
 	// 初始化 COM 环境
-	CoInitialize(NULL); 
-	HRESULT hr = pDoc.CreateInstance(__uuidof(MSXML2::DOMDocument)); 
+	//CoInitialize(NULL);
+
+	HRESULT hr = pDoc.CreateInstance(__uuidof(MSXML2::DOMDocument30)); 
 
 	if(!SUCCEEDED(hr))
 	{
@@ -53,7 +56,9 @@ void CXMLParser::loadXML(TCHAR* lpXMLFile, MSXML2::IXMLDOMDocumentPtr &pDoc, MSX
 	}
 
 	// 加载 xml 文件
-	pDoc->load(lpXMLFile);
+	VARIANT_BOOL loadrs = pDoc->load(lpXMLFile);
+	if(loadrs != -1)
+		throw "Error XML file!";
 
 	// 取得根元素
 	pRootElement = pDoc->GetdocumentElement();
@@ -114,6 +119,7 @@ void CXMLParser::DeleteNode(MSXML2::IXMLDOMElementPtr pParentElement, _bstr_t sC
 	MSXML2::IXMLDOMElementPtr pElement = pParentElement->selectSingleNode(sChildName);
 	if(pElement)
 		pParentElement->removeChild(pElement);
+	pElement.Release();
 }
 
 void CXMLParser::DeleteNode(MSXML2::IXMLDOMElementPtr pChildElement)
@@ -121,6 +127,7 @@ void CXMLParser::DeleteNode(MSXML2::IXMLDOMElementPtr pChildElement)
 	MSXML2::IXMLDOMElementPtr pParentNode = pChildElement->GetparentNode();
 	if(pParentNode)
 		pParentNode->removeChild(pChildElement);
+	pParentNode.Release();
 }
 
 void CXMLParser::DeleteNodeListWithoutAttributes(MSXML2::IXMLDOMElementPtr pParentElement, _bstr_t sChildName)
@@ -128,6 +135,7 @@ void CXMLParser::DeleteNodeListWithoutAttributes(MSXML2::IXMLDOMElementPtr pPare
 	MSXML2::IXMLDOMNodeListPtr pNodeList = pParentElement->selectNodes(sChildName);
 	MSXML2::IXMLDOMNodePtr pChildNode;
 	MSXML2::IXMLDOMNamedNodeMapPtr pAttributes;
+
 	for(int i = 0; i < pNodeList->length; i++)
 	{	
 		pChildNode = pNodeList->Getitem(i);
@@ -145,4 +153,8 @@ void CXMLParser::DeleteNodeListWithoutAttributes(MSXML2::IXMLDOMElementPtr pPare
 		continue;
 		*/
 	}
+
+	pNodeList.Release();
+	pChildNode.Release();
+	pAttributes.Release();
 }

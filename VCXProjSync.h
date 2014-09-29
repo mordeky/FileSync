@@ -11,20 +11,20 @@
 
 #pragma once
 
-#include "XMLParser.h"
+//#include "XMLParser.h"
 #include "ConfigFile.h"
 #include "VCXML.h"
 
 #define RELATIVE_POINT_LEN  50
 
-class VCXProjSync : public CXMLParser
+class VCXProjSync //: public CXMLParser
 {
 private:
 	bool bVCProj;
 
-	VC m_vc;
-	VCX m_vcx;
-	VCXFilter m_vcxFilter;
+	VC* m_pVC;
+	VCX* m_pVCX;
+	VCXFilter* m_pVCXFilter;
 
 	ConfigFile* m_pConfig;
 	ACCEPT_PATH* m_pCurAcceptPath;

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "XMLParser.h"
 #include <tchar.h>
 #include <atlstr.h>
+#include "XMLParser.h"
+#include "Common.h"
 
 struct UNIT
 {
@@ -11,28 +12,30 @@ struct UNIT
 
 	UNIT() : strData(""), pNext(NULL)
 	{}
+
+	~UNIT()
+	{}
 };
 
-struct ACCEPT_PATH
+struct ACCEPT_PATH : public UNIT
 {
-	CString strPath;
-
-	UNIT* pOrder;
+	UNIT* pSubfolderOrder;
 	UNIT* pRejectFile;
 	UNIT* pRejectPath;
 	ACCEPT_PATH *pNext;
 
-	ACCEPT_PATH() : strPath(""), pNext(NULL)
+	ACCEPT_PATH() : pNext(NULL)
 	{
-		pOrder = new UNIT;
+		pSubfolderOrder = new UNIT;
 		pRejectFile = new UNIT;
 		pRejectPath = new UNIT;
 	}
 
 	~ACCEPT_PATH()
 	{
-		delete pRejectFile;
-		delete pRejectPath;
+		deleteLink(pSubfolderOrder);
+		deleteLink(pRejectFile);
+		deleteLink(pRejectPath);
 	}
 };
 
@@ -60,10 +63,20 @@ public:
 	ConfigFile(TCHAR *pFullFile);
 	~ConfigFile();
 
-	void add2List(UNIT* pUnit, CString str, CString strPre = "");
-	void add2List(UNIT* pUnit, MSXML2::IXMLDOMElementPtr pParentElement, CString strNodeName);
-	void add2List(ACCEPT_PATH* pPath, MSXML2::IXMLDOMElementPtr pParentElement, CString strNodeName);
+	UNIT* add2SettingList(CString strNodeName, CString strPre = "");
+
+	UNIT* add2List(UNIT* pUnit, CString str, CString strPre = "");
+
+	template<typename T>
+	T* addInnerPaths2PathList(MSXML2::IXMLDOMElementPtr pElement, T* pUnit);
+	template<typename T>
+	void addInnerPaths2PathList(T* pUnit, MSXML2::IXMLDOMElementPtr pParentElement, CString strNodeName);
+
+	void add2AcceptPathList(ACCEPT_PATH* pPath, MSXML2::IXMLDOMElementPtr pParentElement, CString strNodeName);
+
 	void add2AcceptPathList(int iLen, TCHAR** pPathList);
+	ACCEPT_PATH* addRootPath2AcceptPathList(MSXML2::IXMLDOMElementPtr pElement, ACCEPT_PATH* pPath);
+
 	void add2RejectFolderList(CString strTokens);
 	void add2RejectFolderTypeList(CString strTokens);
 	
@@ -73,7 +86,8 @@ public:
 	bool checkFile(ACCEPT_PATH* pAcceptPath, const CString strPath, CString strFileName);
 	bool checkPath(ACCEPT_PATH* pAcceptPath, const CString strPath);
 
-	bool checkFolder(UNIT* ptr, const CString strFolder);
+	bool isFolderBeginWith(UNIT* ptr, const CString strFolder);
+	bool isFolderEqualTo(UNIT* ptr, const CString strFolder);
 
 	/**
 	 * 检查文件名为 strFileName 的文件，是否属于 ptr 所指向的一系列文件类型中的某一个

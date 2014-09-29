@@ -101,7 +101,10 @@ public:
 		m_pFilesGroup = AddNode(m_pRootElement, _T("ItemGroup"), _T(""));
 	}
 
-	~VCX(void){}
+	~VCX(void)
+	{
+		m_pFilesGroup.Release();
+	}
 
 public:
 	/*
@@ -141,6 +144,11 @@ public:
 	VCXFilter(CString strFileName) : VCX(strFileName, ".vcxproj.filters")
 	{
 		m_pFiltersGroup = AddNode(m_pRootElement, _T("ItemGroup"), _T(""));
+	}
+
+	~VCXFilter()
+	{
+		m_pFiltersGroup.Release();
 	}
 
 public:
